@@ -1,0 +1,46 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parameters
+L = 1  # Length of the rod
+T = 0.5  # Total time to simulate
+nx = 51  # Number of spatial points
+nt = 1000  # Number of time steps
+dx = L / (nx - 1)  # Spatial step size
+dt = T / nt  # Time step size
+
+# Stability condition for explicit scheme: dt <= dx^2 / 2
+alpha = dt / dx**2
+if alpha > 0.5:
+    raise ValueError("Stability condition not satisfied: dt must be <= dx^2 / 2")
+
+# Initialize u (temperature field)
+x = np.linspace(0, L, nx)
+u = np.sin(np.pi * x)  # Initial condition: u(x, 0) = sin(pi * x)
+u_new = np.zeros(nx)  # Array to store updated values
+u_analytical = np.zeros(nx)  # Array to store analytical solution
+
+# Boundary conditions: u(0, t) = u(L, t) = 0
+u[0] = u[-1] = 0
+
+# Time evolution using the forward Euler scheme
+for n in range(nt):
+    u_new[0] = u_new[-1] = 0  # Enforcing boundary conditions
+    for i in range(1, nx - 1):
+        u_new[i] = u[i] + alpha * (u[i + 1] - 2 * u[i] + u[i - 1])
+    u[:] = u_new  # Update the temperature field
+
+# Analytical solution for comparison
+for i in range(nx):
+    u_analytical[i] = np.exp(-np.pi**2 * T) * np.sin(np.pi * x[i])
+
+# Plotting the results
+plt.figure(figsize=(10, 6))
+plt.plot(x, u, label="Numerical Solution (Explicit Euler)", linestyle='--', marker='o')
+plt.plot(x, u_analytical, label="Analytical Solution", linestyle='-', marker='x')
+plt.xlabel("Position (x)")
+plt.ylabel("Temperature (u)")
+plt.title("Temperature Gradient in a Rod")
+plt.legend()
+plt.grid(True)
+plt.show()
